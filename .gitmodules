@@ -3,10 +3,10 @@
 	url = https://github.com/UnivapFinApp/backend.git
 [submodule "frontend"]
 	path = frontend
-	url = git@github.com:UnivapFinApp/frontend.git
+	url = https://github.com/UnivapFinApp/frontend.git
 [submodule "gateway-api"]
 	path = gateway-api
-	url = git@github.com:UnivapFinApp/gateway-api.git
+	url = https://github.com/UnivapFinApp/gateway-api.git
 [submodule "ia"]
 	path = ia
-	url = git@github.com:UnivapFinApp/ia.git
+	url = https://github.com/UnivapFinApp/ia.git
