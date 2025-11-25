@@ -1,0 +1,101 @@
+services:
+  api:
+    container_name: cashapi
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - DATABASE_URL=$DATABASE_URL
+    env_file: ./.env
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://api:3000/v1/api/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "3000:3000"
+    networks:
+      - internal
+  db:
+    container_name: cashdb
+    image: postgres:17.6-alpine3.22
+    restart: always
+    ports:
+      - "5432:5432"
+    env_file: ./.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  rabbitmq:
+    container_name: cashrmq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    networks:
+      - internal
+
+  ai-worker:
+    container_name: cashai
+    build: ./ia
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    networks:
+      - internal
+
+  frontend:
+    container_name: cashfront
+    build: ./frontend/UnivapProjet
+    env_file: ./.env
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "80:80"
+    networks:
+      - internal
+
+  gateway:
+    build: ./gateway-api
+    container_name: cashgateway
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      - PORT=8080
+    networks:
+      - internal
+networks:
+  internal:
