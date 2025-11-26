@@ -18,6 +18,8 @@ Criação de um software de gerenciamento financeiro com auxilio de IA para cate
 
 ## 4. Como rodar
 
+Ao clonar, use o comando `git submodule update --init` para clonar os repositórios de submodulos.
+
 Inclua as informações no `.env` seguindo o template `.env.template`. (Para o contexto atual, o .env será disponibilizado) 
 
 Vá em `backend/` e abra o arquivo `run.sh`. 
